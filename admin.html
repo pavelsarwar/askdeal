@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NAPS Admin</title><link rel="stylesheet" href="assets/style.css">
+<style>
+.admin-shell{width:min(1200px,94%);margin:30px auto}.admin-login{max-width:460px;margin:70px auto}
+.admin-grid{display:grid;grid-template-columns:220px 1fr;gap:20px}.admin-nav button{width:100%;margin-bottom:8px;text-align:left}
+.admin-form{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.admin-form .full{grid-column:1/-1}
+.admin-table{width:100%;border-collapse:collapse}.admin-table th,.admin-table td{padding:10px;border-bottom:1px solid #e5e9f0;text-align:left;font-size:13px}
+@media(max-width:760px){.admin-grid{grid-template-columns:1fr}.admin-form{grid-template-columns:1fr}.admin-form .full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="container"><div>🔐 NAPS Administration</div><div>Nationwide Affordable Price Search</div></div></div>
+<div id="loginView" class="admin-login card">
+<h2>Admin Login</h2><p class="lead" style="font-size:14px">Sign in with your Supabase admin account.</p>
+<div class="field"><label>Email</label><input id="loginEmail" type="email"></div>
+<div class="field"><label>Password</label><input id="loginPassword" type="password"></div>
+<button class="btn btn-primary" onclick="adminLogin()">Sign In</button>
+<div id="loginMsg" class="hint"></div>
+</div>
+<div id="adminView" class="admin-shell" style="display:none">
+<div class="deals-head"><div><h1 style="font-size:32px;margin:0">NAPS Admin</h1><div class="result-count">Manage dynamic website data</div></div><button class="btn btn-light" onclick="adminLogout()">Sign out</button></div>
+<div class="admin-grid">
+<aside class="card admin-nav">
+<button class="btn btn-light" onclick="showModule('products')">📦 Products</button>
+<button class="btn btn-light" onclick="showModule('merchants')">🏪 Merchants</button>
+<button class="btn btn-light" onclick="showModule('prices')">💰 Product Prices</button>
+<button class="btn btn-light" onclick="showModule('deals')">🔥 Deals</button>
+<button class="btn btn-light" onclick="showModule('gold')">💎 Gold Rates</button>
+<button class="btn btn-light" onclick="showModule('remittance')">💱 Remittance Rates</button>
+<button class="btn btn-light" onclick="showModule('fuel')">⛽ Fuel Prices</button>
+<button class="btn btn-light" onclick="showModule('hospitals')">🏥 Hospitals</button>
+<button class="btn btn-light" onclick="showModule('articles')">📘 Articles</button>
+</aside>
+<main><div id="moduleCard" class="card"><h2>Dashboard</h2><p>Select a module to manage data.</p></div></main>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/admin.js"></script>
+</body></html>
