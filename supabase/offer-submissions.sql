@@ -1,5 +1,5 @@
 -- NAPS public offer submission + admin approval workflow
--- Run this in Supabase SQL Editor after schema.sql and offers-cms-v2.sql.
+-- Safe to re-run in Supabase SQL Editor.
 
 create table if not exists public.offer_submissions (
   id uuid primary key default gen_random_uuid(),
@@ -13,10 +13,12 @@ create table if not exists public.offer_submissions (
   state_name text,
   city text,
   location_text text,
+  google_maps_url text,
   discount_text text,
   start_at timestamptz,
   end_at timestamptz,
   description text,
+  details_html text,
   source_url text,
   image_url text,
   status text not null default 'pending' check (status in ('pending','approved','rejected')),
@@ -25,6 +27,10 @@ create table if not exists public.offer_submissions (
   created_at timestamptz not null default now(),
   reviewed_at timestamptz
 );
+
+-- Upgrade existing installations safely.
+alter table public.offer_submissions add column if not exists google_maps_url text;
+alter table public.offer_submissions add column if not exists details_html text;
 
 alter table public.offer_submissions enable row level security;
 
