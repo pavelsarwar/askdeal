@@ -5,7 +5,7 @@ async function showOffersCMS(){
   const {data,error}=await db.from('deals').select('id,title,status,offer_type,start_at,end_at,featured,merchants(name),categories(name),states(name)').order('created_at',{ascending:false}).limit(100);
   const host=document.getElementById('offerRows');
   if(error){host.innerHTML=`<p>${escapeHtmlOffer(error.message)}</p>`;return;}
-  host.innerHTML=`<div style="overflow:auto"><table class="admin-table"><thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Status</th><th>Dates</th><th>Actions</th></tr></thead><tbody>${(data||[]).map(r=>`<tr><td><b>${escapeHtmlOffer(r.title)}</b>${r.featured?' <span class="best-badge">Featured</span>':''}</td><td>${escapeHtmlOffer(r.categories?.name||'')}</td><td>${escapeHtmlOffer(prettyOfferType(r.offer_type))}</td><td>${r.status==='published'?'<span class="best-badge">Published</span>':'Draft'}</td><td>${fmtDate(r.start_at)} – ${fmtDate(r.end_at)}</td><td><button class="btn btn-light" onclick="editOffer('${r.id}')">Edit</button> <button class="btn btn-light" onclick="deleteOffer('${r.id}')">Delete</button></td></tr>`).join('')}</tbody></table></div>`;
+  host.innerHTML=`<div style="overflow:auto"><table class="admin-table"><thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Status</th><th>Dates</th><th>Actions</th></tr></thead><tbody>${(data||[]).map(r=>`<tr><td><b>${escapeHtmlOffer(r.title)}</b>${r.featured?' <span class="best-badge">Homepage Featured</span>':''}</td><td>${escapeHtmlOffer(r.categories?.name||'')}</td><td>${escapeHtmlOffer(prettyOfferType(r.offer_type))}</td><td>${r.status==='published'?'<span class="best-badge">Published</span>':'Draft'}</td><td>${fmtDate(r.start_at)} – ${fmtDate(r.end_at)}</td><td><button class="btn btn-light" onclick="editOffer('${r.id}')">Edit</button> <button class="btn btn-light" onclick="deleteOffer('${r.id}')">Delete</button></td></tr>`).join('')}</tbody></table></div>`;
 }
 
 async function openOfferEditor(record=null){
@@ -27,7 +27,7 @@ async function openOfferEditor(record=null){
     <aside class="offer-side">
       <div class="card" style="padding:16px"><h3 style="margin-top:0">Publish</h3>
         <div class="field"><label>Status</label><select id="offerStatus"><option value="draft" ${selected(record?.status,'draft')}>Draft</option><option value="published" ${selected(record?.status,'published')}>Published</option></select></div>
-        <label style="display:flex;gap:8px;align-items:center;margin:12px 0"><input id="offerFeatured" type="checkbox" ${record?.featured?'checked':''}> Featured offer</label>
+        <label style="display:flex;gap:8px;align-items:flex-start;margin:12px 0"><input id="offerFeatured" type="checkbox" ${record?.featured?'checked':''} style="margin-top:3px"><span><b>Show on Homepage / Featured</b><br><small style="color:#697586">Featured active offers can appear inside “Deals near you”.</small></span></label>
         <button class="btn btn-primary" style="width:100%">${record?'Update':'Save'} Offer</button>
       </div>
       <div class="card" style="padding:16px;margin-top:14px"><h3 style="margin-top:0">Offer Settings</h3>
@@ -37,6 +37,9 @@ async function openOfferEditor(record=null){
         <div class="field"><label>State / Territory</label><select id="offerState"><option value="">All Malaysia</option>${(states.data||[]).map(x=>`<option value="${x.id}" ${String(record?.state_id||'')===String(x.id)?'selected':''}>${escapeHtmlOffer(x.name)}</option>`).join('')}</select></div>
         <div class="field"><label>Location / Mall</label><input id="offerLocation" value="${attr(record?.location_text||'')}" placeholder="e.g. Mid Valley Megamall"></div>
         <div class="field"><label>City</label><input id="offerCity" value="${attr(record?.city||'')}" placeholder="e.g. Kuala Lumpur"></div>
+        <div class="field"><label>Latitude <span style="font-weight:400;color:#98a2b3">(optional)</span></label><input id="offerLatitude" type="number" step="0.0000001" value="${attr(record?.latitude??'')}" placeholder="3.1390000"></div>
+        <div class="field"><label>Longitude <span style="font-weight:400;color:#98a2b3">(optional)</span></label><input id="offerLongitude" type="number" step="0.0000001" value="${attr(record?.longitude??'')}" placeholder="101.6869000"></div>
+        <div class="hint" style="margin-top:-6px;margin-bottom:12px">Add coordinates when available for accurate nearest-deal sorting.</div>
         <div class="field"><label>Discount Label</label><input id="offerDiscount" value="${attr(record?.discount_text||'')}" placeholder="e.g. Up to 50% OFF"></div>
         <div class="field"><label>Start Date & Time</label><input id="offerStart" type="datetime-local" value="${toLocalInput(record?.start_at)}"></div>
         <div class="field"><label>End Date & Time</label><input id="offerEnd" type="datetime-local" value="${toLocalInput(record?.end_at)}"></div>
@@ -62,6 +65,7 @@ async function saveOffer(e){
     featured:document.getElementById('offerFeatured').checked,image_url:valueOrNull('offerFeaturedImage'),
     description:valueOrNull('offerDescription'),content_html:offerEditor.root.innerHTML,
     location_text:valueOrNull('offerLocation'),city:valueOrNull('offerCity'),discount_text:valueOrNull('offerDiscount'),
+    latitude:numberValueOrNull('offerLatitude'),longitude:numberValueOrNull('offerLongitude'),
     start_at:dateOrNull('offerStart'),end_at:dateOrNull('offerEnd'),source_url:valueOrNull('offerSource')
   };
   let result;
@@ -75,17 +79,13 @@ function pickFeaturedImage(){document.getElementById('featuredFileInput').click(
 async function uploadFeaturedImage(file){if(!file)return;const url=await uploadOfferImage(file);if(url){document.getElementById('offerFeaturedImage').value=url;renderFeaturedPreview()}}
 function renderFeaturedPreview(){const box=document.getElementById('featuredPreview');const url=document.getElementById('offerFeaturedImage')?.value;if(box)box.innerHTML=url?`<img src="${attr(url)}" style="max-width:280px;max-height:180px;border-radius:12px;border:1px solid #e5e9f0">`:''}
 async function quillImageHandler(){const input=document.createElement('input');input.type='file';input.accept='image/*';input.onchange=async()=>{const file=input.files?.[0];if(!file)return;const url=await uploadOfferImage(file);if(url){const range=offerEditor.getSelection(true);offerEditor.insertEmbed(range.index,'image',url);offerEditor.setSelection(range.index+1)}};input.click()}
-async function uploadOfferImage(file){
-  if(file.size>10*1024*1024){alert('Image must be below 10MB.');return null;}
-  const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`offers/${new Date().getFullYear()}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const {error}=await db.storage.from('offer-media').upload(path,file,{cacheControl:'3600',upsert:false});if(error){alert(error.message);return null}
-  return db.storage.from('offer-media').getPublicUrl(path).data.publicUrl;
-}
+async function uploadOfferImage(file){if(file.size>10*1024*1024){alert('Image must be below 10MB.');return null;}const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`offers/${new Date().getFullYear()}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;const {error}=await db.storage.from('offer-media').upload(path,file,{cacheControl:'3600',upsert:false});if(error){alert(error.message);return null}return db.storage.from('offer-media').getPublicUrl(path).data.publicUrl;}
 function prettyOfferType(v){return ({sale:'Sale / Offer',clearance:'Warehouse / Clearance',promotion:'Promotion',freebie:'Freebie'})[v]||v||''}
 function fmtDate(v){return v?new Date(v).toLocaleDateString('en-MY'):'—'}
 function selected(v,x){return (v||'')===x?'selected':''}
 function valueOrNull(id){const v=document.getElementById(id)?.value?.trim();return v||null}
 function numOrNull(id){const v=document.getElementById(id)?.value;return v?Number(v):null}
+function numberValueOrNull(id){const v=document.getElementById(id)?.value;return v!==''&&v!=null?Number(v):null}
 function dateOrNull(id){const v=document.getElementById(id)?.value;return v?new Date(v).toISOString():null}
 function toLocalInput(v){if(!v)return'';const d=new Date(v);const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 function attr(v){return escapeHtmlOffer(v).replace(/`/g,'&#96;')}
