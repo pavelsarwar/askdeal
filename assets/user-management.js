@@ -27,7 +27,7 @@ async function loadAdminUsers(){
 }
 
 function openInviteUserForm(){
-  moduleCard.innerHTML=`<div class="deals-head"><div><h2 style="margin:0">Invite New User</h2><div class="result-count">The user will receive an email and set their own password</div></div><button class="btn btn-light" onclick="showUserManagement()">← Back</button></div><form class="admin-form" onsubmit="sendUserInvite(event)" style="margin-top:18px"><div class="field"><label>Full Name</label><input id="inviteName" required placeholder="Full name"></div><div class="field"><label>Email</label><input id="inviteEmail" type="email" required placeholder="name@example.com"></div><div class="field"><label>Role</label><select id="inviteRole"><option value="editor">Editor — content/offers</option><option value="admin">Admin — manage site data</option><option value="merchant">Merchant — merchant role</option></select></div><div class="full"><div class="notice">No password is created here. Supabase will send an invitation email. The invited user will set their own password securely.</div></div><div class="full"><button class="btn btn-primary" type="submit">Send Invitation</button></div></form><div id="inviteMsg" class="hint" style="margin-top:12px"></div>`;
+  moduleCard.innerHTML=`<div class="deals-head"><div><h2 style="margin:0">Invite New User</h2><div class="result-count">The user will receive an email and set their own password</div></div><button class="btn btn-light" onclick="showUserManagement()">← Back</button></div><form class="admin-form" onsubmit="sendUserInvite(event)" style="margin-top:18px"><div class="field"><label>Full Name</label><input id="inviteName" required placeholder="Full name"></div><div class="field"><label>Email</label><input id="inviteEmail" type="email" required placeholder="name@example.com"></div><div class="field"><label>Role</label><select id="inviteRole"><option value="editor">Editor — content/offers</option><option value="admin">Admin — manage site data</option><option value="merchant">Merchant — merchant role</option></select></div><div class="full"><div class="notice">No password is created here. Supabase sends an invitation email. The invited user opens the link, sets their own password, then logs in to NAPS Admin.</div></div><div class="full"><button class="btn btn-primary" type="submit">Send Invitation</button></div></form><div id="inviteMsg" class="hint" style="margin-top:12px"></div>`;
 }
 
 async function sendUserInvite(e){
@@ -35,9 +35,9 @@ async function sendUserInvite(e){
   const btn=e.target.querySelector('button[type="submit"]'),msg=document.getElementById('inviteMsg');
   btn.disabled=true;btn.textContent='Sending...';msg.textContent='';
   try{
-    const redirectTo=new URL('admin.html',location.href).href;
+    const redirectTo=new URL('accept-invite.html',location.href).href;
     await invokeUserFn({action:'invite',full_name:inviteName.value.trim(),email:inviteEmail.value.trim(),role:inviteRole.value,redirect_to:redirectTo});
-    msg.innerHTML='<b>Invitation sent successfully.</b> The user should check their email.';
+    msg.innerHTML='<b>Invitation sent successfully.</b> The user should check their email and set a password.';
     e.target.reset();
   }catch(err){msg.textContent=err.message;}finally{btn.disabled=false;btn.textContent='Send Invitation';}
 }
