@@ -1,0 +1,47 @@
+/* NAPS PWA v1 mobile-app layer. Desktop remains unchanged. */
+.naps-bottom-nav,.naps-install-fab{display:none}
+@media(max-width:760px){
+  :root{--app-nav-h:70px}
+  body{padding-bottom:calc(var(--app-nav-h) + env(safe-area-inset-bottom));background:#f5f6f8}
+  .container{width:min(100% - 24px,1180px)}
+  .topbar{display:none}
+  header{top:0;box-shadow:0 1px 0 rgba(16,24,40,.06)}
+  .nav{height:58px}
+  .nav-actions .btn-light{display:none}
+  .nav-actions .btn-primary{padding:9px 12px;font-size:12px}
+  .menu-btn{width:40px;height:40px;border-radius:14px}
+  .brand{font-size:22px}
+  .hero{padding:24px 0 22px;background:linear-gradient(180deg,#fff 0%,#fff7f5 100%)}
+  .hero-grid{gap:18px}
+  .hero h1,h1{font-size:34px;line-height:1.08;letter-spacing:-1.2px;margin:14px 0 10px}
+  .hero p,.lead{font-size:15px;line-height:1.55}
+  .eyebrow{font-size:11px;padding:6px 9px}
+  .searchbar{margin-top:16px;border-radius:18px;padding:6px;gap:6px;box-shadow:0 10px 30px rgba(16,24,40,.08)}
+  .searchbar input,.searchbar select{border-radius:13px;padding:13px}
+  .searchbar .btn{min-height:46px;border-radius:13px}
+  .section{padding:24px 0}
+  .section-title{align-items:flex-start;margin-bottom:14px}
+  .section-title h2{font-size:22px;letter-spacing:-.35px}
+  .section-title p{font-size:13px;line-height:1.45}
+  .quick-filters{display:flex;overflow-x:auto;gap:10px;padding:2px 1px 8px;scroll-snap-type:x proximity;scrollbar-width:none}
+  .quick-filters::-webkit-scrollbar{display:none}
+  .qf{min-width:max-content;padding:12px 14px;border-radius:999px;font-size:13px;scroll-snap-align:start}
+  .category-grid{grid-template-columns:repeat(3,1fr);gap:10px}
+  .category{padding:14px 8px;border-radius:18px;min-height:106px;display:flex;flex-direction:column;justify-content:center}
+  .category .ico{font-size:25px;margin-bottom:7px}.category b{font-size:12px}.category small{font-size:10px;line-height:1.25;margin-top:3px}
+  .deal-grid{grid-template-columns:1fr;gap:12px}.deal{border-radius:20px;box-shadow:0 4px 18px rgba(16,24,40,.04)}
+  .deal-img{height:118px}.deal-body{padding:14px}.merchant{font-size:18px}
+  .content-grid{gap:12px}.sidebar{border-radius:18px;padding:16px}.page-hero{padding:24px 0}.page-hero h1{font-size:30px}
+  .cards-3,.article-grid,.stat-grid,.info-grid{grid-template-columns:1fr}
+  .card,.rate-card,.stat-card{border-radius:18px}
+  .compare-table-wrap{border:0;background:transparent;overflow:visible}
+  .compare-table{min-width:0;display:block}.compare-table thead{display:none}.compare-table tbody{display:grid;gap:10px}.compare-table tr{display:block;background:#fff;border:1px solid #e5e9f0;border-radius:18px;padding:12px}.compare-table td{display:flex;justify-content:space-between;gap:16px;border:0;padding:6px 0;font-size:13px}.compare-table td:before{content:attr(data-label);font-weight:800;color:#667085}
+  footer{padding-bottom:18px}
+  .toast{bottom:calc(var(--app-nav-h) + 14px + env(safe-area-inset-bottom));left:12px;right:12px;text-align:center}
+  .naps-bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:70;height:calc(var(--app-nav-h) + env(safe-area-inset-bottom));padding:6px 8px env(safe-area-inset-bottom);background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-top:1px solid #e7e9ee;display:grid;grid-template-columns:repeat(5,1fr);box-shadow:0 -8px 28px rgba(16,24,40,.08)}
+  .naps-bottom-nav a,.naps-bottom-nav button{border:0;background:none;color:#667085;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:750;padding:4px;border-radius:14px;cursor:pointer}
+  .naps-bottom-nav .ico{font-size:21px;line-height:1}.naps-bottom-nav .active{color:#e53935;background:#fff3f2}
+  .naps-install-fab{position:fixed;right:14px;bottom:calc(var(--app-nav-h) + 14px + env(safe-area-inset-bottom));z-index:68;border:0;border-radius:999px;background:#101828;color:#fff;padding:10px 14px;font-weight:800;box-shadow:0 10px 28px rgba(16,24,40,.2);cursor:pointer}
+  .naps-install-fab.show{display:block}
+}
+@media(max-width:390px){.category-grid{grid-template-columns:repeat(2,1fr)}}
