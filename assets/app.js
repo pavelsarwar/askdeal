@@ -16,91 +16,23 @@ const dealData = [
  {merchant:"Home Expo",product:"Air Fryer",title:"Home Appliance Expo Deal",category:"Exhibition",state:"Selangor",period:"upcoming",price:199.00,originalPrice:299.00,discount:33,distance:10.5,ends:"Starts Fri",tag:"Home Expo",icon:"🏠"}
 ];
 
-function toggleDrawer(open=true){
-  document.getElementById('drawer')?.classList.toggle('open',open);
-  document.getElementById('backdrop')?.classList.toggle('show',open);
-}
-function showToast(t){const el=document.getElementById('toast'); if(!el)return; el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',2400);}
+function toggleDrawer(open=true){document.getElementById('drawer')?.classList.toggle('open',open);document.getElementById('backdrop')?.classList.toggle('show',open)}
+function showToast(t){const el=document.getElementById('toast');if(!el)return;el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',2400)}
 
 function renderDeals(){
-  const grid=document.getElementById('dealGrid'); if(!grid)return;
-
-  const kw=(document.getElementById('keyword')?.value||'').trim().toLowerCase();
-  const state=document.getElementById('state')?.value||'';
-  const cat=document.getElementById('category')?.value||'';
-  const period=document.getElementById('period')?.value||'';
-  const minPrice=parseFloat(document.getElementById('minPrice')?.value);
-  const maxPrice=parseFloat(document.getElementById('maxPrice')?.value);
-  const sort=document.getElementById('sort')?.value||'recommended';
-
-  let list=dealData.filter(d=>{
-    const searchable=(d.merchant+' '+d.product+' '+d.title+' '+d.tag+' '+d.category).toLowerCase();
-    return (!kw || searchable.includes(kw))
-      && (!state || d.state===state)
-      && (!cat || d.category===cat)
-      && (!period || d.period===period)
-      && (Number.isNaN(minPrice) || d.price>=minPrice)
-      && (Number.isNaN(maxPrice) || d.price<=maxPrice);
-  });
-
-  if(sort==='price_low') list.sort((a,b)=>a.price-b.price);
-  if(sort==='price_high') list.sort((a,b)=>b.price-a.price);
-  if(sort==='discount') list.sort((a,b)=>b.discount-a.discount);
-  if(sort==='distance') list.sort((a,b)=>a.distance-b.distance);
-
-  grid.innerHTML=list.map(d=>`
-    <article class="deal">
-      <div class="deal-img">
-        <div><div style="font-size:38px">${d.icon}</div><div class="merchant">${d.merchant}</div></div>
-        <span class="badge">${d.period==='now'?'LIVE':d.period.toUpperCase()}</span>
-      </div>
-      <div class="deal-body">
-        <div class="tag">${d.tag}</div>
-        <h3 style="margin-bottom:3px">${d.product}</h3>
-        <div style="color:#667085;font-size:13px">${d.title}</div>
-        <div class="meta"><span>📍 ${d.state}</span><span>🚗 ${d.distance} km</span><span>⏰ ${d.ends}</span></div>
-        <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0 12px">
-          <strong style="font-size:22px;color:#168a55">RM ${d.price.toFixed(2)}</strong>
-          <span style="text-decoration:line-through;color:#98a2b3;font-size:13px">RM ${d.originalPrice.toFixed(2)}</span>
-        </div>
-        <div class="price-row">
-          <div class="discount">${d.discount}% OFF</div>
-          <a class="view" href="deal-detail.html">View deal →</a>
-        </div>
-      </div>
-    </article>`).join('');
-
-  if(!list.length) grid.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center"><h3>No matching products found</h3><p>Try another product name, price range, category or state.</p></div>';
-
-  const c=document.getElementById('resultCount');
-  if(c)c.textContent=list.length+' product offers found';
+ const grid=document.getElementById('dealGrid');if(!grid)return;
+ const kw=(document.getElementById('keyword')?.value||'').trim().toLowerCase(),state=document.getElementById('state')?.value||'',cat=document.getElementById('category')?.value||'',period=document.getElementById('period')?.value||'',minPrice=parseFloat(document.getElementById('minPrice')?.value),maxPrice=parseFloat(document.getElementById('maxPrice')?.value),sort=document.getElementById('sort')?.value||'recommended';
+ let list=dealData.filter(d=>{const searchable=(d.merchant+' '+d.product+' '+d.title+' '+d.tag+' '+d.category).toLowerCase();return(!kw||searchable.includes(kw))&&(!state||d.state===state)&&(!cat||d.category===cat)&&(!period||d.period===period)&&(Number.isNaN(minPrice)||d.price>=minPrice)&&(Number.isNaN(maxPrice)||d.price<=maxPrice)});
+ if(sort==='price_low')list.sort((a,b)=>a.price-b.price);if(sort==='price_high')list.sort((a,b)=>b.price-a.price);if(sort==='discount')list.sort((a,b)=>b.discount-a.discount);if(sort==='distance')list.sort((a,b)=>a.distance-b.distance);
+ grid.innerHTML=list.map(d=>`<article class="deal"><div class="deal-img"><div><div style="font-size:38px">${d.icon}</div><div class="merchant">${d.merchant}</div></div><span class="badge">${d.period==='now'?'LIVE':d.period.toUpperCase()}</span></div><div class="deal-body"><div class="tag">${d.tag}</div><h3 style="margin-bottom:3px">${d.product}</h3><div style="color:#667085;font-size:13px">${d.title}</div><div class="meta"><span>📍 ${d.state}</span><span>🚗 ${d.distance} km</span><span>⏰ ${d.ends}</span></div><div style="display:flex;align-items:baseline;gap:8px;margin:8px 0 12px"><strong style="font-size:22px;color:#168a55">RM ${d.price.toFixed(2)}</strong><span style="text-decoration:line-through;color:#98a2b3;font-size:13px">RM ${d.originalPrice.toFixed(2)}</span></div><div class="price-row"><div class="discount">${d.discount}% OFF</div><a class="view" href="deal-detail.html">View deal →</a></div></div></article>`).join('');
+ if(!list.length)grid.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center"><h3>No matching products found</h3><p>Try another product name, price range, category or state.</p></div>';
+ const c=document.getElementById('resultCount');if(c)c.textContent=list.length+' product offers found';
 }
 
-function useLocation(){
-  const text=document.getElementById('locationText');
-  if(!navigator.geolocation){if(text)text.textContent='Location is not supported by this browser.';return;}
-  if(text)text.textContent='Requesting location permission...';
-  navigator.geolocation.getCurrentPosition(
-    p=>{
-      if(text)text.textContent=`Location enabled ✓ (${p.coords.latitude.toFixed(3)}, ${p.coords.longitude.toFixed(3)}). Nearby ranking activated.`;
-      const s=document.getElementById('sort');if(s)s.value='distance';
-      renderDeals();showToast('Nearby offers are prioritized.');
-    },
-    ()=>{if(text)text.textContent='Location access was not allowed. Filter by state instead.';}
-  );
-}
-function resetFilters(){
-  ['keyword','state','category','period','minPrice','maxPrice'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
-  const s=document.getElementById('sort');if(s)s.value='recommended';
-  renderDeals();
-}
-document.addEventListener('DOMContentLoaded',()=>{
-  const q=new URLSearchParams(location.search).get('q');
-  if(q && document.getElementById('keyword')) document.getElementById('keyword').value=q;
-  renderDeals();
-});
+function useLocation(){const text=document.getElementById('locationText');if(!navigator.geolocation){if(text)text.textContent='Location is not supported by this browser.';return}if(text)text.textContent='Requesting location permission...';navigator.geolocation.getCurrentPosition(p=>{if(text)text.textContent=`Location enabled ✓ (${p.coords.latitude.toFixed(3)}, ${p.coords.longitude.toFixed(3)}). Nearby ranking activated.`;const s=document.getElementById('sort');if(s)s.value='distance';renderDeals();showToast('Nearby offers are prioritized.')},()=>{if(text)text.textContent='Location access was not allowed. Filter by state instead.'})}
+function resetFilters(){['keyword','state','category','period','minPrice','maxPrice'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});const s=document.getElementById('sort');if(s)s.value='recommended';renderDeals()}
 
-const comparisonProducts = [
+const comparisonProducts=[
  {name:"Saji Cooking Oil 5kg",merchant:"Lotus's",price:29.90,original:34.90,discount:14,state:"Kuala Lumpur",distance:2.1},
  {name:"Knife Cooking Oil 5kg",merchant:"NSK",price:28.50,original:33.50,discount:15,state:"Selangor",distance:4.1},
  {name:"Buruh Cooking Oil 5kg",merchant:"AEON",price:30.90,original:35.90,discount:14,state:"Selangor",distance:5.6},
@@ -108,16 +40,36 @@ const comparisonProducts = [
  {name:"Entry Laptop 14 inch",merchant:"Tech Expo",price:1499.00,original:1899.00,discount:21,state:"Penang",distance:12},
  {name:"Running Shoes",merchant:"Sports Direct",price:89.00,original:179.00,discount:50,state:"Johor",distance:7.8}
 ];
-function renderComparison(){
-  const host=document.getElementById('compareResult'); if(!host)return;
-  const q=(document.getElementById('compareSearch')?.value||'').toLowerCase().trim();
-  const sort=document.getElementById('compareSort')?.value||'low';
-  let rows=comparisonProducts.filter(x=>!q || (x.name+' '+x.merchant).toLowerCase().includes(q));
-  if(sort==='low')rows.sort((a,b)=>a.price-b.price);
-  if(sort==='high')rows.sort((a,b)=>b.price-a.price);
-  if(sort==='discount')rows.sort((a,b)=>b.discount-a.discount);
-  if(sort==='near')rows.sort((a,b)=>a.distance-b.distance);
-  const cheapest=rows.length?Math.min(...rows.map(x=>x.price)):null;
-  host.innerHTML=rows.length?`<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th>Product</th><th>Seller</th><th>Offer Price</th><th>Original</th><th>Discount</th><th>Location</th><th>Distance</th></tr></thead><tbody>${rows.map(x=>`<tr class="${x.price===cheapest?'best-row':''}"><td><b>${x.name}</b>${x.price===cheapest?' <span class="best-badge">Cheapest</span>':''}</td><td>${x.merchant}</td><td><b>RM ${x.price.toFixed(2)}</b></td><td><span style="text-decoration:line-through;color:#98a2b3">RM ${x.original.toFixed(2)}</span></td><td>${x.discount}%</td><td>${x.state}</td><td>${x.distance} km</td></tr>`).join('')}</tbody></table></div>`:'<div class="card"><h3>No comparison found</h3><p>Try another product keyword.</p></div>';
+function renderComparison(){const host=document.getElementById('compareResult');if(!host)return;const q=(document.getElementById('compareSearch')?.value||'').toLowerCase().trim(),sort=document.getElementById('compareSort')?.value||'low';let rows=comparisonProducts.filter(x=>!q||(x.name+' '+x.merchant).toLowerCase().includes(q));if(sort==='low')rows.sort((a,b)=>a.price-b.price);if(sort==='high')rows.sort((a,b)=>b.price-a.price);if(sort==='discount')rows.sort((a,b)=>b.discount-a.discount);if(sort==='near')rows.sort((a,b)=>a.distance-b.distance);const cheapest=rows.length?Math.min(...rows.map(x=>x.price)):null;host.innerHTML=rows.length?`<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th>Product</th><th>Seller</th><th>Offer Price</th><th>Original</th><th>Discount</th><th>Location</th><th>Distance</th></tr></thead><tbody>${rows.map(x=>`<tr class="${x.price===cheapest?'best-row':''}"><td data-label="Product"><b>${x.name}</b>${x.price===cheapest?' <span class="best-badge">Cheapest</span>':''}</td><td data-label="Seller">${x.merchant}</td><td data-label="Offer Price"><b>RM ${x.price.toFixed(2)}</b></td><td data-label="Original"><span style="text-decoration:line-through;color:#98a2b3">RM ${x.original.toFixed(2)}</span></td><td data-label="Discount">${x.discount}%</td><td data-label="Location">${x.state}</td><td data-label="Distance">${x.distance} km</td></tr>`).join('')}</tbody></table></div>`:'<div class="card"><h3>No comparison found</h3><p>Try another product keyword.</p></div>'}
+
+/* PWA v1 */
+let napsDeferredInstallPrompt=null;
+function setupPwaHead(){
+ if(!document.querySelector('link[rel="manifest"]')){const m=document.createElement('link');m.rel='manifest';m.href='manifest.webmanifest';document.head.appendChild(m)}
+ if(!document.querySelector('meta[name="theme-color"]')){const t=document.createElement('meta');t.name='theme-color';t.content='#e53935';document.head.appendChild(t)}
+ if(!document.querySelector('meta[name="apple-mobile-web-app-capable"]')){const a=document.createElement('meta');a.name='apple-mobile-web-app-capable';a.content='yes';document.head.appendChild(a)}
+ if(!document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')){const a=document.createElement('meta');a.name='apple-mobile-web-app-status-bar-style';a.content='default';document.head.appendChild(a)}
+ if(!document.querySelector('link[data-naps-pwa-css]')){const c=document.createElement('link');c.rel='stylesheet';c.href='assets/pwa.css';c.dataset.napsPwaCss='1';document.head.appendChild(c)}
 }
-document.addEventListener('DOMContentLoaded',()=>renderComparison());
+function setupPwaNav(){
+ if(document.querySelector('.naps-bottom-nav')||location.pathname.endsWith('admin.html')||location.pathname.endsWith('accept-invite.html'))return;
+ const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+ const nav=document.createElement('nav');nav.className='naps-bottom-nav';nav.setAttribute('aria-label','App navigation');
+ const active=(pages)=>pages.includes(page)?'active':'';
+ nav.innerHTML=`<a class="${active(['index.html',''])}" href="index.html"><span class="ico">🏠</span><span>Home</span></a><a class="${active(['deals.html','deal-detail.html'])}" href="deals.html"><span class="ico">🔥</span><span>Deals</span></a><a class="${active(['compare.html'])}" href="compare.html"><span class="ico">⚖️</span><span>Compare</span></a><a href="deals.html?near=1"><span class="ico">📍</span><span>Near Me</span></a><button type="button" onclick="toggleDrawer(true)"><span class="ico">☰</span><span>More</span></button>`;
+ document.body.appendChild(nav);
+ const install=document.createElement('button');install.className='naps-install-fab';install.id='napsInstallButton';install.textContent='⬇ Install NAPS';install.onclick=installNapsPwa;document.body.appendChild(install)
+}
+async function installNapsPwa(){if(!napsDeferredInstallPrompt){showToast('Use your browser menu and choose “Add to Home Screen”.');return}napsDeferredInstallPrompt.prompt();await napsDeferredInstallPrompt.userChoice;napsDeferredInstallPrompt=null;document.getElementById('napsInstallButton')?.classList.remove('show')}
+function registerNapsServiceWorker(){if('serviceWorker'in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(e=>console.warn('NAPS service worker:',e))}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();napsDeferredInstallPrompt=e;document.getElementById('napsInstallButton')?.classList.add('show')});
+window.addEventListener('appinstalled',()=>{napsDeferredInstallPrompt=null;document.getElementById('napsInstallButton')?.classList.remove('show');showToast('NAPS installed successfully.')});
+
+document.addEventListener('DOMContentLoaded',()=>{
+ setupPwaHead();setupPwaNav();registerNapsServiceWorker();
+ const params=new URLSearchParams(location.search),q=params.get('q');
+ if(q&&document.getElementById('keyword'))document.getElementById('keyword').value=q;
+ const p=params.get('period');if(p&&document.getElementById('period'))document.getElementById('period').value=p;
+ if(params.get('near')==='1'&&document.getElementById('locationText'))setTimeout(useLocation,350);
+ renderDeals();renderComparison();
+});
