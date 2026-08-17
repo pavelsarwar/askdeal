@@ -2,7 +2,7 @@
   "name": "NAPS - Nationwide Affordable Price Search",
   "short_name": "NAPS",
   "description": "Find affordable prices, nearby deals, offers and daily comparisons across Malaysia.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -15,8 +15,8 @@
     {"src":"assets/naps-maskable.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ],
   "shortcuts": [
-    {"name":"Deals","short_name":"Deals","url":"./deals.html","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]},
-    {"name":"Compare","short_name":"Compare","url":"./compare.html","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]},
-    {"name":"Near Me","short_name":"Near Me","url":"./deals.html?near=1","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]}
+    {"name":"Deals","short_name":"Deals","url":"./deals","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"Compare","short_name":"Compare","url":"./compare","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"Near Me","short_name":"Near Me","url":"./deals?near=1","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]}
   ]
 }
