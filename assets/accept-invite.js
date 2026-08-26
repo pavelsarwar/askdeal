@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
   if(error){status.textContent=error.message;return;}
   if(!data.session){status.innerHTML='Invitation session not found yet. If you opened this page directly, please use the link from your invitation email.';}
 });
-
 async function setInvitePassword(e){
   e.preventDefault();
   const p1=document.getElementById('newPassword').value;
@@ -21,6 +20,6 @@ async function setInvitePassword(e){
   if(!session){status.textContent='Invitation session is missing or expired. Please ask the Super Admin to send a new invitation.';btn.disabled=false;btn.textContent='Set Password & Continue';return;}
   const {error}=await inviteDb.auth.updateUser({password:p1});
   if(error){status.textContent=error.message;btn.disabled=false;btn.textContent='Set Password & Continue';return;}
-  status.innerHTML='<b>Password set successfully.</b> Redirecting to NAPS Admin...';
+  status.innerHTML='<b>Password set successfully.</b> Redirecting to Ask Deal Admin...';
   setTimeout(()=>location.href='admin.html',1000);
 }
