@@ -1,0 +1,54 @@
+(async function(){
+  const root=document.getElementById('dealDetailRoot');
+  if(!root||!window.NAPS_SUPABASE||typeof supabase==='undefined')return;
+  const params=new URLSearchParams(location.search);
+  const id=params.get('id');
+  if(!id){showError('No deal was selected.');return;}
+  const client=supabase.createClient(window.NAPS_SUPABASE.url,window.NAPS_SUPABASE.anonKey);
+  try{
+    const {data,error}=await client.from('deals').select('*,categories(name),merchants(name,google_maps_url,address_text,city,latitude,longitude)').eq('id',id).single();
+    if(error||!data){showError('This deal could not be found or is no longer available.');return;}
+    render(data);
+  }catch(e){showError('Unable to load this deal right now.');}
+
+  function render(d){
+    document.title=`${d.title||'Deal'} | Ask Deal`;
+    const merchant=d.merchants||{};
+    const place=merchant.address_text||merchant.city||d.location_text||d.city||'Malaysia';
+    const maps=merchant.google_maps_url||buildMapsUrl(merchant.latitude,merchant.longitude,place);
+    const category=d.categories?.name||'Deal';
+    const status=offerStatus(d.start_at,d.end_at);
+    root.innerHTML=`
+      <section class="page-hero"><div class="container"><div class="eyebrow">${esc(category)} · ${esc(prettyType(d.offer_type))}</div><h1>${esc(d.title)}</h1><p class="lead">${esc(d.description||merchant.name||'Latest offer on Ask Deal')}</p></div></section>
+      <section class="section"><div class="container"><div class="deal-detail-layout">
+        <main>
+          ${d.image_url?`<div class="deal-detail-cover"><img src="${attr(d.image_url)}" alt="${attr(d.title)}"></div>`:''}
+          <article class="card deal-detail-content">
+            <div class="deal-detail-meta"><span class="badge">${esc(status)}</span>${d.discount_text?`<span class="deal-detail-discount">${esc(d.discount_text)}</span>`:''}</div>
+            <h2>Offer details</h2>
+            <div class="rich-content">${d.content_html||`<p>${esc(d.description||'No additional details provided.')}</p>`}</div>
+          </article>
+        </main>
+        <aside>
+          <div class="card deal-detail-side">
+            <h3>${esc(merchant.name||'Offer information')}</h3>
+            <div class="detail-row"><span>Category</span><b>${esc(category)}</b></div>
+            <div class="detail-row"><span>Offer Type</span><b>${esc(prettyType(d.offer_type))}</b></div>
+            <div class="detail-row"><span>Starts</span><b>${formatDate(d.start_at)}</b></div>
+            <div class="detail-row"><span>Ends</span><b>${formatDate(d.end_at)}</b></div>
+            ${place?`<div class="detail-row"><span>Location</span><b>${esc(place)}</b></div>`:''}
+            ${maps?`<a class="btn btn-primary" style="display:block;text-align:center;margin-top:14px" href="${attr(maps)}" target="_blank" rel="noopener">📍 Get Directions</a>`:''}
+            ${d.source_url?`<a class="btn btn-light" style="display:block;text-align:center;margin-top:8px" href="${attr(d.source_url)}" target="_blank" rel="noopener">Official / Source Link</a>`:''}
+            <button class="btn btn-light" style="width:100%;margin-top:8px" onclick="navigator.share?navigator.share({title:document.title,url:location.href}):navigator.clipboard.writeText(location.href).then(()=>showToast('Deal link copied'))">Share Deal</button>
+          </div>
+          <a class="btn btn-light" style="display:block;text-align:center;margin-top:12px" href="deals.html">← Back to all deals</a>
+        </aside>
+      </div></div></section>`;
+  }
+  function showError(msg){root.innerHTML=`<section class="section"><div class="container"><div class="card" style="text-align:center;max-width:650px;margin:auto"><h2>Deal not available</h2><p>${esc(msg)}</p><a class="btn btn-primary" href="deals.html">Browse Deals</a></div></div></section>`;}
+  function prettyType(v){return({sale:'Sale / Offer',warehouse:'Warehouse Sale',clearance:'Clearance',promotion:'Promotion',freebie:'Freebie'})[v]||'Offer'}
+  function offerStatus(s,e){const n=Date.now(),st=s?new Date(s).getTime():null,en=e?new Date(e).getTime():null;if(st&&st>n)return'Upcoming';if(en&&en<n)return'Ended';return'Happening Now'}
+  function formatDate(v){return v?new Date(v).toLocaleString('en-MY',{dateStyle:'medium',timeStyle:'short'}):'—'}
+  function buildMapsUrl(lat,lng,label){if(lat!=null&&lng!=null)return`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat+','+lng)}`;if(label)return`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(label)}`;return''}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function attr(v){return esc(v)}
+})();
