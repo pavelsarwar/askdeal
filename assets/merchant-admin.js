@@ -30,6 +30,26 @@ function extractMerchantCoordinates(){
   document.getElementById('merchantLatitude').value=Number(m[1]).toFixed(7);document.getElementById('merchantLongitude').value=Number(m[2]).toFixed(7);hint.textContent='Coordinates extracted ✓';
 }
 
-async function saveMerchant(e){e.preventDefault();const obj={name:document.getElementById('merchantName').value.trim(),google_maps_url:merchantVal('merchantMapsUrl'),address_text:merchantVal('merchantAddress'),city:merchantVal('merchantCity'),latitude:merchantNum('merchantLatitude'),longitude:merchantNum('merchantLongitude'),active:document.getElementById('merchantActive').value==='true'};let result;if(merchantEditingId)result=await db.from('merchants').update(obj).eq('id',merchantEditingId);else result=await db.from('merchants').insert(obj);if(result.error){document.getElementById('merchantSaveMsg').textContent=result.error.message;return;}showMerchantManagement();}
+async function saveMerchant(e){
+  e.preventDefault();
+  const name=document.getElementById('merchantName').value.trim();
+  const obj={
+    name,
+    google_maps_url:merchantVal('merchantMapsUrl'),
+    address_text:merchantVal('merchantAddress'),
+    city:merchantVal('merchantCity'),
+    latitude:merchantNum('merchantLatitude'),
+    longitude:merchantNum('merchantLongitude'),
+    active:document.getElementById('merchantActive').value==='true'
+  };
+  if(!merchantEditingId)obj.slug=merchantSlug(name)+'-'+Date.now().toString().slice(-5);
+  let result;
+  if(merchantEditingId)result=await db.from('merchants').update(obj).eq('id',merchantEditingId);
+  else result=await db.from('merchants').insert(obj);
+  if(result.error){document.getElementById('merchantSaveMsg').textContent=result.error.message;return;}
+  showMerchantManagement();
+}
+
 async function deleteMerchant(id){if(!confirm('Delete this Merchant / Shop / Mall? Existing offers may still reference it.'))return;const {error}=await db.from('merchants').delete().eq('id',id);if(error)alert(error.message);else showMerchantManagement();}
+function merchantSlug(v){return String(v||'merchant').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80)||'merchant'}
 function merchantVal(id){const v=document.getElementById(id)?.value?.trim();return v||null}function merchantNum(id){const v=document.getElementById(id)?.value;return v!==''&&v!=null?Number(v):null}function merchantAttr(v){return escapeMerchant(v).replace(/`/g,'&#96;')}function escapeMerchant(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
