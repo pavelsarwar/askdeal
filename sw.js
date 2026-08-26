@@ -1,4 +1,4 @@
-const CACHE='naps-pwa-v3';
+const CACHE='askdeal-pwa-v4';
 const CORE=['./','./index.html','./deals.html','./compare.html','./categories.html','./saved.html','./recently-viewed.html','./offline.html','./404.html','./assets/style.css','./assets/pwa.css','./assets/pwa-v2.css','./assets/app.js','./assets/pwa-v2.js','./assets/clean-url.js','./assets/library.js','./assets/naps-icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
