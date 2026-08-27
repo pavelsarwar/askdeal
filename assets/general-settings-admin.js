@@ -16,7 +16,7 @@ const GENERAL_SETTING_FIELDS=[
 
 async function showGeneralSettings(){
   setAdminSectionUrl('general');
-  moduleCard.innerHTML=`<div class="deals-head"><div><h2 style="margin:0">⚙️ General Settings</h2><div class="result-count">Manage homepage header, hero, footer and social media links.</div></div><a class="btn btn-light" href="../askdeal/" target="_blank">View Website ↗</a></div><div id="generalSettingsForm">Loading...</div>`;
+  moduleCard.innerHTML=`<div class="deals-head"><div><h2 style="margin:0">⚙️ General Settings</h2><div class="result-count">Manage homepage header, hero, footer and social media links.</div></div><a class="btn btn-light" href="./" target="_blank">View Website ↗</a></div><div id="generalSettingsForm">Loading...</div>`;
   const {data,error}=await db.from('site_settings').select('key,value');
   const host=document.getElementById('generalSettingsForm');
   if(error){host.innerHTML=`<div class="notice"><b>General Settings database is not ready.</b><br>${gsEsc(error.message)}<br><br>Run <code>supabase/site-settings.sql</code> once in Supabase SQL Editor.</div>`;return;}
