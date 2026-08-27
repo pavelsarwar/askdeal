@@ -1,3 +1,5 @@
+(()=>{if(!document.querySelector('script[data-askdeal-shell]')){const s=document.createElement('script');s.src='assets/global-shell.js?v=1';s.dataset.askdealShell='1';document.head.appendChild(s)}})();
+
 const dealData = [
  {merchant:"Lotus's",product:"Saji Cooking Oil 5kg",title:"Cooking Oil Promotion",category:"Grocery",state:"Kuala Lumpur",period:"now",price:29.90,originalPrice:34.90,discount:14,distance:2.1,ends:"Today",tag:"Cooking Oil",icon:"🛢️"},
  {merchant:"NSK",product:"Knife Cooking Oil 5kg",title:"Value Pack Cooking Oil Deal",category:"Grocery",state:"Selangor",period:"now",price:28.50,originalPrice:33.50,discount:15,distance:4.1,ends:"4 days",tag:"Cooking Oil",icon:"🛢️"},
