@@ -10,8 +10,27 @@
     img.style.maxWidth='42vw';
     img.style.height='auto';
     img.style.objectFit='contain';
+    el.style.display='flex';
+    el.style.alignItems='center';
+    el.style.lineHeight='1';
     el.replaceChildren(img);
   });
+
+  // The logo already contains the brand identity, so remove the duplicate tagline directly below it.
+  document.querySelectorAll('header .brand, .drawer-head .brand').forEach(brand=>{
+    const tagline=brand.nextElementSibling;
+    if(tagline && tagline.textContent.trim()==='Ask Deal for any Deal') tagline.remove();
+  });
+
+  // Keep header/drawer branding vertically centered with clean, consistent spacing.
+  const headerNav=document.querySelector('header .nav');
+  if(headerNav){headerNav.style.alignItems='center';headerNav.style.minHeight='68px';}
+  const headerBrand=document.querySelector('header .brand');
+  if(headerBrand){const wrap=headerBrand.parentElement;if(wrap){wrap.style.display='flex';wrap.style.alignItems='center';wrap.style.margin='0';}}
+  const drawerHead=document.querySelector('.drawer-head');
+  if(drawerHead){drawerHead.style.alignItems='center';}
+  const drawerBrand=document.querySelector('.drawer-head .brand');
+  if(drawerBrand){const wrap=drawerBrand.parentElement;if(wrap){wrap.style.display='flex';wrap.style.alignItems='center';}}
 
   if(!window.NAPS_SUPABASE||typeof supabase==='undefined')return;
   const client=supabase.createClient(window.NAPS_SUPABASE.url,window.NAPS_SUPABASE.anonKey);
