@@ -79,6 +79,24 @@ Deno.serve(async (req) => {
       return json({ success: true })
     }
 
+    if (action === 'reset_password') {
+      const userId = String(body.user_id || '').trim()
+      const email = String(body.email || '').trim().toLowerCase()
+      const redirectTo = String(body.redirect_to || '').trim() || undefined
+      if (!userId || !email || !email.includes('@')) return json({ error: 'Valid user and email are required' }, 400)
+
+      const { data: targetData, error: targetError } = await admin.auth.admin.getUserById(userId)
+      if (targetError || !targetData.user) return json({ error: 'User not found' }, 404)
+      if ((targetData.user.email || '').toLowerCase() !== email) return json({ error: 'User email does not match' }, 400)
+
+      const { data: targetProfile } = await admin.from('profiles').select('role').eq('id', userId).single()
+      if (targetProfile?.role === 'super_admin') return json({ error: 'Super Admin password cannot be reset from User Management' }, 403)
+
+      const { error } = await admin.auth.resetPasswordForEmail(email, { redirectTo })
+      if (error) throw error
+      return json({ success: true, email, redirect_to: redirectTo })
+    }
+
     return json({ error: 'Unknown action' }, 400)
   } catch (e) {
     return json({ error: e?.message || 'Unexpected error' }, 500)
