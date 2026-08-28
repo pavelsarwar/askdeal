@@ -1,0 +1,19 @@
+{
+  "name": "askdeal-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ask Deal mobile apps for Android and iOS",
+  "scripts": {
+    "cap:sync": "npx cap sync",
+    "android": "npx cap open android",
+    "ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}
