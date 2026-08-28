@@ -16,13 +16,11 @@
     el.replaceChildren(img);
   });
 
-  // The logo already contains the brand identity, so remove the duplicate tagline directly below it.
   document.querySelectorAll('header .brand, .drawer-head .brand').forEach(brand=>{
     const tagline=brand.nextElementSibling;
     if(tagline && tagline.textContent.trim()==='Ask Deal for any Deal') tagline.remove();
   });
 
-  // Keep header/drawer branding vertically centered with clean, consistent spacing.
   const headerNav=document.querySelector('header .nav');
   if(headerNav){headerNav.style.alignItems='center';headerNav.style.minHeight='68px';}
   const headerBrand=document.querySelector('header .brand');
@@ -31,6 +29,14 @@
   if(drawerHead){drawerHead.style.alignItems='center';}
   const drawerBrand=document.querySelector('.drawer-head .brand');
   if(drawerBrand){const wrap=drawerBrand.parentElement;if(wrap){wrap.style.display='flex';wrap.style.alignItems='center';}}
+
+  // On the homepage, immediately replace the old prototype category cards with live Supabase categories.
+  if(document.querySelector('.category-grid') && !document.querySelector('script[data-home-categories]')){
+    const s=document.createElement('script');
+    s.src='assets/homepage-categories.js?v=20260828';
+    s.dataset.homeCategories='1';
+    document.body.appendChild(s);
+  }
 
   if(!window.NAPS_SUPABASE||typeof supabase==='undefined')return;
   const client=supabase.createClient(window.NAPS_SUPABASE.url,window.NAPS_SUPABASE.anonKey);
