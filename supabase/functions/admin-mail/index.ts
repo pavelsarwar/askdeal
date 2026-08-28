@@ -5,6 +5,7 @@ const corsHeaders={
   'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods':'POST, OPTIONS',
 }
+const allowedFrom=['support@askdeal.com.my','social@askdeal.com.my']
 
 Deno.serve(async(req)=>{
   if(req.method==='OPTIONS')return new Response('ok',{headers:corsHeaders})
@@ -27,17 +28,30 @@ Deno.serve(async(req)=>{
     const action=String(body.action||'list')
 
     if(action==='list'){
-      const r=await resend('/emails/receiving',resendKey)
+      const r=await resend('/emails/receiving?limit=100',resendKey)
       const filter=String(body.filter||'all').toLowerCase()
       let rows=Array.isArray(r.data)?r.data:[]
-      if(filter==='support')rows=rows.filter((m:any)=>(m.to||[]).some((x:string)=>x.toLowerCase()==='support@askdeal.com.my'))
-      if(filter==='social')rows=rows.filter((m:any)=>(m.to||[]).some((x:string)=>x.toLowerCase()==='social@askdeal.com.my'))
+      if(filter==='support')rows=rows.filter((m:any)=>(m.to||[]).some((x:string)=>normalizeAddress(x)==='support@askdeal.com.my'))
+      if(filter==='social')rows=rows.filter((m:any)=>(m.to||[]).some((x:string)=>normalizeAddress(x)==='social@askdeal.com.my'))
       return json({emails:rows,has_more:!!r.has_more})
     }
 
     if(action==='get'){
       const id=String(body.id||'').trim();if(!id)return json({error:'Email id is required'},400)
       const email=await resend(`/emails/receiving/${encodeURIComponent(id)}`,resendKey)
+      return json({email})
+    }
+
+    if(action==='list_sent'){
+      const r=await resend('/emails?limit=100',resendKey)
+      const rows=(Array.isArray(r.data)?r.data:[]).filter((m:any)=>allowedFrom.includes(normalizeAddress(m.from||'')))
+      return json({emails:rows,has_more:!!r.has_more})
+    }
+
+    if(action==='get_sent'){
+      const id=String(body.id||'').trim();if(!id)return json({error:'Email id is required'},400)
+      const email=await resend(`/emails/${encodeURIComponent(id)}`,resendKey)
+      if(!allowedFrom.includes(normalizeAddress(email?.from||'')))return json({error:'This sent message is not an Ask Deal Mail message'},403)
       return json({email})
     }
 
@@ -50,7 +64,6 @@ Deno.serve(async(req)=>{
 
     if(action==='send'){
       const fromAddress=String(body.from||'support@askdeal.com.my').trim().toLowerCase()
-      const allowedFrom=['support@askdeal.com.my','social@askdeal.com.my']
       if(!allowedFrom.includes(fromAddress))return json({error:'Invalid sender address'},400)
 
       const to=parseAddresses(body.to)
@@ -61,12 +74,8 @@ Deno.serve(async(req)=>{
       const html=String(body.html||'').trim()
       if(!to.length||!subject||(!text&&!html))return json({error:'To, subject and message are required'},400)
 
-      const payload:any={
-        from:`Ask Deal <${fromAddress}>`,
-        to,
-        subject,
-        reply_to:fromAddress,
-      }
+      const senderName=fromAddress.startsWith('social@')?'Ask Deal Social':'Ask Deal Support'
+      const payload:any={from:`${senderName} <${fromAddress}>`,to,subject,reply_to:fromAddress}
       if(cc.length)payload.cc=cc
       if(bcc.length)payload.bcc=bcc
       if(text)payload.text=text
@@ -81,6 +90,11 @@ Deno.serve(async(req)=>{
   }catch(e){return json({error:e?.message||'Unexpected error'},500)}
 })
 
+function normalizeAddress(value:any){
+  const s=String(value||'').trim().toLowerCase()
+  const m=s.match(/<([^>]+)>/)
+  return (m?m[1]:s).trim()
+}
 function parseAddresses(value:any){
   const raw=Array.isArray(value)?value.join(','):String(value||'')
   return raw.split(',').map((x:string)=>x.trim()).filter((x:string)=>x&&x.includes('@')).slice(0,50)
