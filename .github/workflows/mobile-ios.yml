@@ -1,0 +1,59 @@
+name: Ask Deal iOS Cloud Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'capacitor.config.json'
+      - 'www/**'
+      - '.github/workflows/mobile-ios.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate iOS project
+        run: npx cap add ios
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build iOS app without signing
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Archive generated iOS project
+        run: tar -czf askdeal-ios-project.tar.gz ios
+
+      - name: Upload iOS project artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: askdeal-ios-generated-project
+          path: askdeal-ios-project.tar.gz
+          if-no-files-found: error
+          retention-days: 14
