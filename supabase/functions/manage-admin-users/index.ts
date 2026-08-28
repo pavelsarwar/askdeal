@@ -18,6 +18,7 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false }
     })
     const token = authHeader.replace('Bearer ', '')
+    if (jwtAal(token) !== 'aal2') return json({ error: 'MFA verification required' }, 403)
     const { data: userData, error: userError } = await admin.auth.getUser(token)
     if (userError || !userData.user) return json({ error: 'Invalid session' }, 401)
 
@@ -90,9 +91,7 @@ Deno.serve(async (req) => {
       if (!userId) return json({ error: 'User is required' }, 400)
       const { data: targetProfile } = await admin.from('profiles').select('role').eq('id', userId).single()
       if (targetProfile?.role === 'super_admin') return json({ error: 'Super Admin cannot be deactivated from User Management' }, 403)
-      const { error } = await admin.auth.admin.updateUserById(userId, {
-        ban_duration: active ? 'none' : '876000h'
-      })
+      const { error } = await admin.auth.admin.updateUserById(userId, { ban_duration: active ? 'none' : '876000h' })
       if (error) throw error
       return json({ success: true, active })
     }
@@ -120,14 +119,11 @@ Deno.serve(async (req) => {
       const email = String(body.email || '').trim().toLowerCase()
       const redirectTo = String(body.redirect_to || '').trim() || undefined
       if (!userId || !email || !email.includes('@')) return json({ error: 'Valid user and email are required' }, 400)
-
       const { data: targetData, error: targetError } = await admin.auth.admin.getUserById(userId)
       if (targetError || !targetData.user) return json({ error: 'User not found' }, 404)
       if ((targetData.user.email || '').toLowerCase() !== email) return json({ error: 'User email does not match' }, 400)
-
       const { data: targetProfile } = await admin.from('profiles').select('role').eq('id', userId).single()
       if (targetProfile?.role === 'super_admin') return json({ error: 'Super Admin password cannot be reset from User Management' }, 403)
-
       const { error } = await admin.auth.resetPasswordForEmail(email, { redirectTo })
       if (error) throw error
       return json({ success: true, email, redirect_to: redirectTo })
@@ -139,9 +135,13 @@ Deno.serve(async (req) => {
   }
 })
 
+function jwtAal(token:string){
+  try{
+    const part=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')
+    const padded=part+'='.repeat((4-part.length%4)%4)
+    return JSON.parse(atob(padded)).aal || ''
+  }catch{return ''}
+}
 function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  })
+  return new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 }
