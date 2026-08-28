@@ -40,7 +40,8 @@ Deno.serve(async (req) => {
         created_at: u.created_at,
         full_name: map.get(u.id)?.full_name || u.user_metadata?.full_name || '',
         role: map.get(u.id)?.role || 'editor',
-        confirmed: !!u.email_confirmed_at
+        confirmed: !!u.email_confirmed_at,
+        password_set: u.user_metadata?.password_set === true
       }))
       return json({ users })
     }
@@ -54,7 +55,7 @@ Deno.serve(async (req) => {
       if (!allowedRoles.includes(role)) return json({ error: 'Invalid role' }, 400)
       const redirectTo = String(body.redirect_to || '').trim() || undefined
       const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-        data: { full_name: fullName, role },
+        data: { full_name: fullName, role, password_set: false },
         redirectTo
       })
       if (error) throw error
@@ -66,7 +67,7 @@ Deno.serve(async (req) => {
         }, { onConflict: 'id' })
         if (profileError) throw profileError
       }
-      return json({ success: true, user_id: data.user?.id, email })
+      return json({ success: true, user_id: data.user?.id, email, redirect_to: redirectTo })
     }
 
     if (action === 'update_role') {
