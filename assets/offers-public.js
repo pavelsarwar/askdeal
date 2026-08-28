@@ -7,10 +7,13 @@
     const {data,error}=await client.from('deals').select('id,title,slug,description,image_url,discount_text,start_at,end_at,offer_type,location_text,city,featured,category_id,state_id,merchant_id,categories(name),states(name),merchants(name)').eq('status','published').order('featured',{ascending:false}).order('start_at',{ascending:false});
     if(error)throw error;
     allOffers=data||[];
-    if(!allOffers.length)return;
     window.NAPS_OFFERS=allOffers;
     bindCmsFilters();renderCmsOffers();
-  }catch(e){console.warn('NAPS Offers CMS fallback:',e)}
+  }catch(e){
+    console.warn('Ask Deal offers load error:',e);
+    grid.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center"><h3>Unable to load offers</h3><p>Please try again shortly.</p></div>';
+    const c=document.getElementById('resultCount');if(c)c.textContent='';
+  }
 
   function bindCmsFilters(){
     ['keyword','state','category','period','sort'].forEach(id=>{const el=document.getElementById(id);if(el)el.onchange=renderCmsOffers;if(el&&id==='keyword')el.oninput=renderCmsOffers});
@@ -42,9 +45,9 @@
       return true;
     });
     if(sort==='ending')list.sort((a,b)=>(new Date(a.end_at||'2999-01-01'))-(new Date(b.end_at||'2999-01-01')));
-    grid.innerHTML=list.map(o=>{const meta={title:o.title,merchant:o.merchants?.name||'NAPS',location:o.location_text||o.city||o.states?.name||'Malaysia',image_url:o.image_url||'',discount_text:o.discount_text||''};return `<article class="deal naps-native-card"><div class="deal-img" style="${o.image_url?`background-image:url('${cssUrl(o.image_url)}');background-size:cover;background-position:center`:''}"><button class="naps-save-btn" data-save-offer="${o.id}" onclick='napsToggleSaved("${o.id}",${JSON.stringify(meta).replace(/'/g,"&#39;")})' aria-label="Save offer">♡</button><div>${o.image_url?'':`<div style="font-size:38px">🔥</div><div class="merchant">${esc(o.merchants?.name||'NAPS Offer')}</div>`}</div><span class="badge">${o.featured?'FEATURED':typeLabel(o.offer_type)}</span></div><div class="deal-body"><div class="tag">${esc(o.categories?.name||typeLabel(o.offer_type))}</div><h3>${esc(o.title)}</h3><div style="color:#667085;font-size:13px">${esc(o.description||'')}</div><div class="meta"><span>📍 ${esc(o.location_text||o.city||o.states?.name||'Malaysia')}</span>${o.end_at?`<span>⏰ Ends ${new Date(o.end_at).toLocaleDateString('en-MY')}</span>`:''}</div><div class="price-row"><div class="discount">${esc(o.discount_text||typeLabel(o.offer_type))}</div><div class="naps-card-actions"><button onclick="napsShare('${attrJs(o.title)}','${location.origin+location.pathname.replace(/deals\.html.*/,'offer.html?id='+encodeURIComponent(o.id))}')">↗</button><a class="view" href="offer.html?id=${encodeURIComponent(o.id)}">View offer →</a></div></div></div></article>`}).join('');
-    if(!list.length)grid.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center"><h3>No matching offers found</h3><p>Try another category, location or date filter.</p></div>';
-    const c=document.getElementById('resultCount');if(c)c.textContent=list.length+' published offers found';
+    grid.innerHTML=list.map(o=>{const meta={title:o.title,merchant:o.merchants?.name||'Ask Deal',location:o.location_text||o.city||o.states?.name||'Malaysia',image_url:o.image_url||'',discount_text:o.discount_text||''};return `<article class="deal naps-native-card"><div class="deal-img" style="${o.image_url?`background-image:url('${cssUrl(o.image_url)}');background-size:cover;background-position:center`:''}"><button class="naps-save-btn" data-save-offer="${o.id}" onclick='napsToggleSaved("${o.id}",${JSON.stringify(meta).replace(/'/g,"&#39;")})' aria-label="Save offer">♡</button><div>${o.image_url?'':`<div style="font-size:38px">🔥</div><div class="merchant">${esc(o.merchants?.name||'Ask Deal Offer')}</div>`}</div><span class="badge">${o.featured?'FEATURED':typeLabel(o.offer_type)}</span></div><div class="deal-body"><div class="tag">${esc(o.categories?.name||typeLabel(o.offer_type))}</div><h3>${esc(o.title)}</h3><div style="color:#667085;font-size:13px">${esc(o.description||'')}</div><div class="meta"><span>📍 ${esc(o.location_text||o.city||o.states?.name||'Malaysia')}</span>${o.end_at?`<span>⏰ Ends ${new Date(o.end_at).toLocaleDateString('en-MY')}</span>`:''}</div><div class="price-row"><div class="discount">${esc(o.discount_text||typeLabel(o.offer_type))}</div><div class="naps-card-actions"><button onclick="napsShare('${attrJs(o.title)}','${location.origin+location.pathname.replace(/deals\.html.*/,'offer.html?id='+encodeURIComponent(o.id))}')">↗</button><a class="view" href="offer.html?id=${encodeURIComponent(o.id)}">View offer →</a></div></div></div></article>`}).join('');
+    if(!list.length)grid.innerHTML='<div class="card" style="grid-column:1/-1;text-align:center"><h3>No published offers yet</h3><p>New offers added from Ask Deal Admin will appear here.</p></div>';
+    const c=document.getElementById('resultCount');if(c)c.textContent=list.length+' published offers';
     setTimeout(()=>window.napsRefreshSaveButtons?.(),0);
   }
   function typeLabel(v){return ({sale:'SALE',warehouse:'WAREHOUSE',clearance:'CLEARANCE',promotion:'PROMOTION',freebie:'FREEBIE'})[v]||'OFFER'}
