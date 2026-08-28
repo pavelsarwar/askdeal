@@ -19,6 +19,7 @@ Deno.serve(async(req)=>{
     if(!authHeader.startsWith('Bearer '))return json({error:'Missing authorization'},401)
     const admin=createClient(supabaseUrl,serviceRole,{auth:{autoRefreshToken:false,persistSession:false}})
     const token=authHeader.replace('Bearer ','')
+    if(jwtAal(token)!=='aal2')return json({error:'MFA verification required'},403)
     const {data:userData,error:userError}=await admin.auth.getUser(token)
     if(userError||!userData.user)return json({error:'Invalid session'},401)
     const {data:profile}=await admin.from('profiles').select('role').eq('id',userData.user.id).single()
@@ -65,7 +66,6 @@ Deno.serve(async(req)=>{
     if(action==='send'){
       const fromAddress=String(body.from||'support@askdeal.com.my').trim().toLowerCase()
       if(!allowedFrom.includes(fromAddress))return json({error:'Invalid sender address'},400)
-
       const to=parseAddresses(body.to)
       const cc=parseAddresses(body.cc)
       const bcc=parseAddresses(body.bcc)
@@ -73,7 +73,6 @@ Deno.serve(async(req)=>{
       const text=String(body.text||'').trim()
       const html=String(body.html||'').trim()
       if(!to.length||!subject||(!text&&!html))return json({error:'To, subject and message are required'},400)
-
       const senderName=fromAddress.startsWith('social@')?'Ask Deal Social':'Ask Deal Support'
       const payload:any={from:`${senderName} <${fromAddress}>`,to,subject,reply_to:fromAddress}
       if(cc.length)payload.cc=cc
@@ -81,7 +80,6 @@ Deno.serve(async(req)=>{
       if(text)payload.text=text
       if(html)payload.html=html
       if(body.in_reply_to)payload.headers={'In-Reply-To':String(body.in_reply_to),'References':String(body.in_reply_to)}
-
       const sent=await resend('/emails',resendKey,{method:'POST',body:JSON.stringify(payload)})
       return json({success:true,sent})
     }
@@ -90,19 +88,14 @@ Deno.serve(async(req)=>{
   }catch(e){return json({error:e?.message||'Unexpected error'},500)}
 })
 
-function normalizeAddress(value:any){
-  const s=String(value||'').trim().toLowerCase()
-  const m=s.match(/<([^>]+)>/)
-  return (m?m[1]:s).trim()
+function jwtAal(token:string){
+  try{
+    const part=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')
+    const padded=part+'='.repeat((4-part.length%4)%4)
+    return JSON.parse(atob(padded)).aal || ''
+  }catch{return ''}
 }
-function parseAddresses(value:any){
-  const raw=Array.isArray(value)?value.join(','):String(value||'')
-  return raw.split(',').map((x:string)=>x.trim()).filter((x:string)=>x&&x.includes('@')).slice(0,50)
-}
-async function resend(path:string,key:string,init:RequestInit={}){
-  const res=await fetch('https://api.resend.com'+path,{...init,headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json',...(init.headers||{})}})
-  const data=await res.json().catch(()=>({}))
-  if(!res.ok)throw new Error(data?.message||data?.error||`Resend request failed (${res.status})`)
-  return data
-}
+function normalizeAddress(value:any){const s=String(value||'').trim().toLowerCase();const m=s.match(/<([^>]+)>/);return (m?m[1]:s).trim()}
+function parseAddresses(value:any){const raw=Array.isArray(value)?value.join(','):String(value||'');return raw.split(',').map((x:string)=>x.trim()).filter((x:string)=>x&&x.includes('@')).slice(0,50)}
+async function resend(path:string,key:string,init:RequestInit={}){const res=await fetch('https://api.resend.com'+path,{...init,headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json',...(init.headers||{})}});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data?.message||data?.error||`Resend request failed (${res.status})`);return data}
 function json(data:unknown,status=200){return new Response(JSON.stringify(data),{status,headers:{...corsHeaders,'Content-Type':'application/json'}})}
