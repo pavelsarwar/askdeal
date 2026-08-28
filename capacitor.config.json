@@ -8,9 +8,24 @@
     "allowNavigation": ["askdeal.com.my", "www.askdeal.com.my"]
   },
   "android": {
-    "allowMixedContent": false
+    "allowMixedContent": false,
+    "captureInput": true
   },
   "ios": {
-    "contentInset": "automatic"
+    "contentInset": "automatic",
+    "preferredContentMode": "mobile"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#ffffff",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#ffffff",
+      "overlaysWebView": false
+    }
   }
 }
