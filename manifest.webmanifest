@@ -11,12 +11,12 @@
   "lang": "en-MY",
   "categories": ["shopping", "lifestyle"],
   "icons": [
-    {"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
-    {"src":"assets/naps-maskable.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
+    {"src":"assets/askdeal-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
+    {"src":"assets/askdeal-maskable.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ],
   "shortcuts": [
-    {"name":"Deals","short_name":"Deals","url":"./deals","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]},
-    {"name":"Near Me","short_name":"Near Me","url":"./deals?near=1","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]},
-    {"name":"Submit Deal","short_name":"Submit","url":"./submit-deal","icons":[{"src":"assets/naps-icon.svg","sizes":"any","type":"image/svg+xml"}]}
+    {"name":"Deals","short_name":"Deals","url":"./deals","icons":[{"src":"assets/askdeal-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"Near Me","short_name":"Near Me","url":"./deals?near=1","icons":[{"src":"assets/askdeal-icon.svg","sizes":"any","type":"image/svg+xml"}]},
+    {"name":"Submit Deal","short_name":"Submit","url":"./submit-deal","icons":[{"src":"assets/askdeal-icon.svg","sizes":"any","type":"image/svg+xml"}]}
   ]
 }
