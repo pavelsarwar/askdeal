@@ -52,10 +52,27 @@ Deno.serve(async(req)=>{
       const fromAddress=String(body.from||'support@askdeal.com.my').trim().toLowerCase()
       const allowedFrom=['support@askdeal.com.my','social@askdeal.com.my']
       if(!allowedFrom.includes(fromAddress))return json({error:'Invalid sender address'},400)
-      const to=String(body.to||'').trim(),subject=String(body.subject||'').trim(),text=String(body.text||'').trim()
-      if(!to||!to.includes('@')||!subject||!text)return json({error:'To, subject and message are required'},400)
-      const payload:any={from:`Ask Deal <${fromAddress}>`,to:[to],subject,text,reply_to:fromAddress}
+
+      const to=parseAddresses(body.to)
+      const cc=parseAddresses(body.cc)
+      const bcc=parseAddresses(body.bcc)
+      const subject=String(body.subject||'').trim()
+      const text=String(body.text||'').trim()
+      const html=String(body.html||'').trim()
+      if(!to.length||!subject||(!text&&!html))return json({error:'To, subject and message are required'},400)
+
+      const payload:any={
+        from:`Ask Deal <${fromAddress}>`,
+        to,
+        subject,
+        reply_to:fromAddress,
+      }
+      if(cc.length)payload.cc=cc
+      if(bcc.length)payload.bcc=bcc
+      if(text)payload.text=text
+      if(html)payload.html=html
       if(body.in_reply_to)payload.headers={'In-Reply-To':String(body.in_reply_to),'References':String(body.in_reply_to)}
+
       const sent=await resend('/emails',resendKey,{method:'POST',body:JSON.stringify(payload)})
       return json({success:true,sent})
     }
@@ -64,6 +81,10 @@ Deno.serve(async(req)=>{
   }catch(e){return json({error:e?.message||'Unexpected error'},500)}
 })
 
+function parseAddresses(value:any){
+  const raw=Array.isArray(value)?value.join(','):String(value||'')
+  return raw.split(',').map((x:string)=>x.trim()).filter((x:string)=>x&&x.includes('@')).slice(0,50)
+}
 async function resend(path:string,key:string,init:RequestInit={}){
   const res=await fetch('https://api.resend.com'+path,{...init,headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json',...(init.headers||{})}})
   const data=await res.json().catch(()=>({}))
