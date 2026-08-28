@@ -41,7 +41,10 @@ Deno.serve(async (req) => {
         full_name: map.get(u.id)?.full_name || u.user_metadata?.full_name || '',
         role: map.get(u.id)?.role || 'editor',
         confirmed: !!u.email_confirmed_at,
-        password_set: u.user_metadata?.password_set === true
+        password_set: u.user_metadata?.password_set === true,
+        temporary_password: u.user_metadata?.temporary_password === true,
+        banned_until: u.banned_until || null,
+        active: !u.banned_until || new Date(u.banned_until).getTime() <= Date.now()
       }))
       return json({ users })
     }
@@ -55,7 +58,7 @@ Deno.serve(async (req) => {
       if (!allowedRoles.includes(role)) return json({ error: 'Invalid role' }, 400)
       const redirectTo = String(body.redirect_to || '').trim() || undefined
       const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
-        data: { full_name: fullName, role, password_set: false },
+        data: { full_name: fullName, role, password_set: false, temporary_password: false },
         redirectTo
       })
       if (error) throw error
@@ -74,7 +77,40 @@ Deno.serve(async (req) => {
       const userId = String(body.user_id || '')
       const role = String(body.role || '')
       if (!userId || !['admin','editor','merchant'].includes(role)) return json({ error: 'Invalid user or role' }, 400)
+      const { data: targetProfile } = await admin.from('profiles').select('role').eq('id', userId).single()
+      if (targetProfile?.role === 'super_admin') return json({ error: 'Super Admin role cannot be changed here' }, 403)
       const { error } = await admin.from('profiles').update({ role }).eq('id', userId)
+      if (error) throw error
+      return json({ success: true })
+    }
+
+    if (action === 'set_active') {
+      const userId = String(body.user_id || '').trim()
+      const active = body.active === true
+      if (!userId) return json({ error: 'User is required' }, 400)
+      const { data: targetProfile } = await admin.from('profiles').select('role').eq('id', userId).single()
+      if (targetProfile?.role === 'super_admin') return json({ error: 'Super Admin cannot be deactivated from User Management' }, 403)
+      const { error } = await admin.auth.admin.updateUserById(userId, {
+        ban_duration: active ? 'none' : '876000h'
+      })
+      if (error) throw error
+      return json({ success: true, active })
+    }
+
+    if (action === 'set_temp_password') {
+      const userId = String(body.user_id || '').trim()
+      const password = String(body.password || '')
+      if (!userId) return json({ error: 'User is required' }, 400)
+      if (password.length < 8) return json({ error: 'Temporary password must be at least 8 characters' }, 400)
+      const { data: targetData, error: targetError } = await admin.auth.admin.getUserById(userId)
+      if (targetError || !targetData.user) return json({ error: 'User not found' }, 404)
+      const { data: targetProfile } = await admin.from('profiles').select('role').eq('id', userId).single()
+      if (targetProfile?.role === 'super_admin') return json({ error: 'Super Admin password cannot be changed from User Management' }, 403)
+      const currentMeta = targetData.user.user_metadata || {}
+      const { error } = await admin.auth.admin.updateUserById(userId, {
+        password,
+        user_metadata: { ...currentMeta, password_set: true, temporary_password: true }
+      })
       if (error) throw error
       return json({ success: true })
     }
